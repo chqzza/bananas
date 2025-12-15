@@ -2,7 +2,6 @@
     "video": {
         "resolution": [1280, 720],
         "fullscreen": false,
-        "vsync": true,
         "ui_scale": 1.0
     },
 
