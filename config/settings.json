@@ -1,44 +1,50 @@
 {
-  "video": {
-    "resolution": [
-      1280,
-      720
-    ],
-    "fullscreen": false,
-    "vsync": true,
-    "ui_scale": 1.0
-  },
-  "audio": {
-    "master_volume": 0.5,
-    "music_volume": 0.5,
-    "sfx_volume": 0.7,
-    "mute": false
-  },
-  "controls": {
-    "move_up": "K_w",
-    "move_down": "K_s",
-    "move_left": "K_a",
-    "move_right": "K_d",
-    "dash": "K_LSHIFT",
-    "attack": "K_SPACE",
-    "pause": "K_ESCAPE"
-  },
-  "gameplay": {
-    "difficulty": "Hard",
-    "auto_save": true,
-    "enemy_spawn_rate": 1.0,
-    "player_speed": 250,
-    "enemy_tracking_range": 400,
-    "enemy_min_range": 50
-  },
-  "player": {
-    "selected_character": "Male 01-1.png",
-    "starting_gold": 0,
-    "starting_level": 1
-  },
-  "developer": {
-    "show_fps": true,
-    "enable_hitboxes": false,
-    "log_enemy_ai": false
-  }
+    "video": {
+        "resolution": [1280, 720],
+        "fullscreen": false,
+        "vsync": true,
+        "ui_scale": 1.0
+    },
+
+    "audio": {
+        "master_volume": 0.5,
+        "music_volume": 0.5,
+        "sfx_volume": 0.7,
+        "mute": false
+    },
+
+    "controls": {
+        "move_up": "K_w",
+        "move_down": "K_s",
+        "move_left": "K_a",
+        "move_right": "K_d",
+        "dash": "K_LSHIFT",
+        "attack": "K_SPACE",
+        "menu_select": "K_SPACE",
+        "menu_up": "K_w",
+        "menu_down": "K_s",
+        "pause": "K_ESCAPE"
+    },
+
+    "gameplay": {
+        "difficulty": "Normal",
+        "auto_save": true,
+        "enemy_spawn_rate": 1.0,
+        "player_speed": 250,
+        "player_dash_multiplier": 2.0,
+        "enemy_tracking_range": 400,
+        "enemy_min_range": 50
+    },
+
+    "player": {
+        "selected_character": "Male_07",
+        "starting_gold": 0,
+        "starting_level": 1
+    },
+
+    "developer": {
+        "show_fps": true,
+        "enable_hitboxes": false,
+        "log_enemy_ai": false
+    }
 }
