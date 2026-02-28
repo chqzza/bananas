@@ -78,11 +78,11 @@ def make_enemies():
 
     # All spawn positions
     positions = [
-        (600, 100), (600, 100), (600, 100),
-        (1100, 500), (1100, 500),
-        (2000, 1000), (2000, 1000), (2000, 1000), (2000, 1000),
+        (610, 130), (620, 130), (630, 140),
+        (1140, 540), (1150, 520),
+        (2020, 1040), (2030, 1020), (2030, 1060), (2050, 1030),
         (2445, 232),
-        (800, 2300), (800, 2300), (800, 2300),
+        (800, 2300), (850, 2330), (830, 2350),
         (400, 3000), (400, 3000), (400, 3000),
         (2250, 3200), (2250, 3200),
         (1191, 2111), (1191, 2111),
@@ -223,7 +223,7 @@ def play(screen, clock, font, settings, controls):
     else:
         player = make_player(settings)
         items_to_remove = player.from_dict(player_data)
-    pet = Pet(player, "MrMime")    
+    pet = Pet(player, "Growlithe")    
     player.pet = pet    ## hardcodes what pet the player has, can be expanded to have a choice
 
 
@@ -255,9 +255,12 @@ def play(screen, clock, font, settings, controls):
         Portal("B", 281, 321, 1807, 1887, 2458, 958, None),
         Portal("C", 20, 50, 2361, 2414, 480, 3441, items[11]),
         Portal("D", 2248, 2315, 2975, 2990, 4200, 700, items[10]),
-        Portal("E", 1030, 1075 , 1820, 1875, 3530, 3085, items[1])]    
+        Portal("E", 1030, 1075 , 1820, 1875, 3530, 3085, items[1]),
+        Portal("F", 3500, 3552, 3066, 3104, 1140, 1845, items[2] ),
+        Portal("G", 4343, 4629, 900, 1170, 2280, 3030, items[6])]    
 
     signs = [
+        Sign(500, 600, 6110, 6120, "Thank you for saving us from the evil monster!! You have officially beat the game and saved the region"),
         Sign(425, 450, 100, 125, "Press [E] to pick up weapon"), #first spawn
         Sign(1725, 1750, 50, 75, "Press [I] for the inventory and press [E] to equip the armour"),#on bridge
         Sign(460, 490, 1810, 1830, "Beware of the mini boss ahead!"),#start of cave sequence
