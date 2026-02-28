@@ -1,0 +1,22 @@
+{
+  "weapons": [
+    {"name": "Iron Sword", "category": "sword", "description": "sturdy and reliable", "value": 300, "power": 30, "range": "melee"},
+    {"name": "Fire Sword", "category": "sword", "description": "engulfed in flames", "value": 1300, "power": 80, "range": "melee"},
+    {"name": "Crossbow", "category": "bow", "description": "high precision", "value": 800, "power": 30, "range": "ranged"},
+    {"name": "Mystic Staff", "category": "staff", "description": "imbued with magical energy", "value": 900, "power": 45, "range": "ranged"}
+  ],
+  "armour": [
+    {"name": "Leather Armour", "category": "light", "description": "flexible and comfortable", "value": 200, "defence": 20},
+    {"name": "Chainmail Armour", "category": "medium", "description": "balanced protection", "value": 600, "defence": 50},
+    {"name": "Plate Armour", "category": "heavy", "description": "maximum protection", "value": 2000, "defence": 80}
+  ],
+  "consumables": [
+    {"name": "Health Potion", "category": "potion", "effect": "restores health", "value": 70, "strength": 120},
+    {"name": "Mana Potion", "category": "potion", "effect": "restores mana", "value": 40, "strength": 80},
+    {"name": "Strength Elixir", "category": "potion", "effect": "boosts strength temporarily", "value": 150, "strength": 50}
+  ],
+  "quest_items": [
+    {"name": "Ancient Relic", "category": "relic", "description": "holds historical significance", "quest": "The Lost Artifact"},
+    {"name": "Royal Seal", "category": "seal", "description": "symbol of authority", "quest": "The Royal Decree"}
+  ]
+}

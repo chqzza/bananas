@@ -5,9 +5,9 @@ DARK  = (30,30,30)
 BTN   = (50,50,80)
 GREEN = (0,255,0)
 
-def draw_title(surf, font, text, y=20):
+def draw_title(surf, font, text):
     label = font.render(text, True, WHITE)
-    surf.blit(label, label.get_rect(midtop=(surf.get_width()//2, y)))
+    surf.blit(label, (40, 40))
 
 def clamp(n, lo, hi):
     return max(lo, min(hi, n))

@@ -6,7 +6,7 @@ SETTINGS_PATH = "config/settings.json"
 ASSETS = "assets"
 
 def ap(*parts):
-    return os.path.join(ASSETS, *parts)
+    return os.path.join(ASSETS, *parts) ##ap used across game to easily access the assets folder
 
 def load_settings():
     with open(SETTINGS_PATH, "r") as f:
