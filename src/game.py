@@ -67,6 +67,8 @@ def play(screen, clock, font, settings, controls):
                 return "quit"
             if e.type == pygame.KEYDOWN and e.key == controls["pause"]:
                 return "menu"
+            if e.type == pygame.KEYDOWN and e.key == controls["inventory"]:
+                player.open_inventory(screen)
 
         keys = pygame.key.get_pressed()
 

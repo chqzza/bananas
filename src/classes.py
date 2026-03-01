@@ -98,6 +98,12 @@ class Player(Character):
                 (int(self.x - cam_x), int(self.y - cam_y)),
                 20, 2
             )
+    def open_inventory(self, surf):
+        pygame.draw.rect(
+            surf, (0,0,255),
+            pygame.Rect(100, 100, 400, 300), 2
+        )
+        pass
 
 
 class Enemy(Character):
