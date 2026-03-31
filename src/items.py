@@ -8,15 +8,15 @@ img_folder = "assets/items/"
 with open("config/items.json", "r") as f:
     data = json.load(f)
 
-# --- Weapons ---
+
 for w in data["weapons"]:
     items.append(
         Weapon(
             w["name"],
             w["category"],
-            w["description"],    
+            w["description"],
             w["value"],
-            w["power"],   
+            w["power"],
             w["range"],
             f"{img_folder}/{w['name']}.png"
         )
@@ -28,9 +28,9 @@ for a in data["armour"]:
         Armour(
             a["name"],
             a["category"],
-            a["description"],    
+            a["description"],
             a["value"],
-            a["defence"],      
+            a["defence"],
             f"{img_folder}/{a['name']}.png"
         )
     )

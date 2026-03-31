@@ -1,1 +1,18 @@
-{}
+{
+  "name": "Player",
+  "x": 2990.3567552775576,
+  "y": 2549.062877312692,
+  "hp": 200.02597402597402,
+  "hp_max": 210,
+  "attack": 210,
+  "defence": 670,
+  "speed": 200,
+  "gold": 0,
+  "level": 12,
+  "inventory": [
+    "Crossbow",
+    "Fire Sword",
+    "Ancient Relic",
+    "Iron Sword"
+  ]
+}

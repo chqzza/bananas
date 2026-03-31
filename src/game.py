@@ -14,22 +14,22 @@ WHITE = (255,255,255)
 GREEN = (0,255,0)
 PURPLE = (255,0,255) ## some basic colours for hp and xp bars
 
-def draw_health_bar(surf, x, y, hp, hp_max):
+def draw_health_bar(screen, x, y, hp, hp_max):
     w, h = 250, 28
     fill = int((hp / hp_max) * w) if hp_max > 0 else 0
-    pygame.draw.rect(surf, GREEN, (x, y, fill, h))
-    pygame.draw.rect(surf, WHITE, (x, y, w, h), 2) ## draws the players hp bar scalling the bar to the players hp
+    pygame.draw.rect(screen, GREEN, (x, y, fill, h))
+    pygame.draw.rect(screen, WHITE, (x, y, w, h), 2) ## draws the players hp bar scalling the bar to the players hp
 
-def draw_xp_bar(surf, x, y, xp, xp_next, level, font):
+def draw_xp_bar(screen, x, y, xp, xp_next, level, font):
     w, h = 250, 15
     fill = int((xp / xp_next) * w) if xp_next > 0 else 0
-    pygame.draw.rect(surf, PURPLE, (x, y, fill, h))
-    pygame.draw.rect(surf, WHITE, (x, y, w, h), 2)
+    pygame.draw.rect(screen, PURPLE, (x, y, fill, h))
+    pygame.draw.rect(screen, WHITE, (x, y, w, h), 2)
     ## write level and xp text
     text = font.render(f"Level {level} - XP: {xp}/{xp_next}", True, WHITE)
     ## scale down to fit below the bar
     text = pygame.transform.scale(text, (text.get_width() * 0.3, text.get_height() * 0.3))
-    surf.blit(text, (x, y + 15))
+    screen.blit(text, (x, y + 15))
 
     
 
@@ -108,63 +108,52 @@ def make_enemies():
     # Create Enemy objects
     for i, (x, y) in enumerate(positions):
         sprite = files[i % len(files)]
-        enemy = Enemy(f"Enemy {i+1}", x, y, 300, 5, 2, 200, sprite)
+        enemy = Enemy(f"Enemy {i+1}", x, y, 300, 50, 2, 200, sprite)
         enemies.append(enemy)
 
     return enemies
 
 def open_inventory(player, screen, font, keys):
     inventory_open = True
-    item_selected = None
     item_held = False
     space_hovered = 0
 
     while inventory_open:
-        # --- CLEAR SCREEN AREA ---
-        pygame.draw.rect(screen, (50, 50, 50), (100, 100, 1000, 500))
-        pygame.draw.rect(screen, WHITE, (100, 100, 1000, 500), 2)
-        screen.blit(font.render("Inventory (Press I to close)", True, WHITE), (120, 120))
 
-        # --- HANDLE EVENTS (ONLY ONCE PER FRAME) ---
+ 
         for e in pygame.event.get():
+            pygame.draw.rect(screen, (50, 50, 50), (100, 100, 1000, 500))
+            pygame.draw.rect(screen, WHITE, (100, 100, 1000, 500), 2)
+            screen.blit(font.render("Inventory (Press I to close)", True, WHITE), (120, 120))   
             if e.type == pygame.QUIT:
                 inventory_open = False
-
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_i:
                     inventory_open = False
-
                 elif e.key == pygame.K_w:
                     space_hovered = max(0, space_hovered - 1)
-
                 elif e.key == pygame.K_s:
                     space_hovered = min(len(player.inventory.items) - 1, space_hovered + 1)
-
                 elif e.key == pygame.K_SPACE:
                     if not item_held:
                         # Pick up item
                         if space_hovered < len(player.inventory.items):
-                            item_selected = player.inventory.items[space_hovered]
                             start_pos = space_hovered
                             item_held = True
                     else:
                         # Swap items
                         if space_hovered < len(player.inventory.items):
-                            player.inventory.items[start_pos], player.inventory.items[space_hovered] = \
-                                player.inventory.items[space_hovered], player.inventory.items[start_pos]
+                            player.inventory.items[start_pos], player.inventory.items[space_hovered] = player.inventory.items[space_hovered], player.inventory.items[start_pos]
                         item_held = False
 
-        # --- DRAW ITEMS ---
-        y_offset = 200
+        y_offset = 190
         for item in player.inventory.items:
             screen.blit(item.image, (120, y_offset))
             screen.blit(font.render(item.name, True, WHITE), (190, y_offset + 10))
             y_offset += 100
 
-        # --- DRAW SELECTOR CIRCLE (ALIGNED PROPERLY) ---
-        circle_y = 200 + space_hovered * 100 + 50
-        pygame.draw.circle(screen, (0, 255, 0), (100, circle_y), 10, 2)
-
+        circle_y = 190 + space_hovered * 100 + 50
+        pygame.draw.circle(screen, (0, 255, 0), (115, circle_y), 10, 2)
         pygame.display.flip()
 
 
@@ -192,6 +181,23 @@ def handle_portals(player, portals, keys, controls):
     if not any(portal.contains(player.x, player.y) for portal in portals):
         player.last_portal = None
 
+def draw_hotbar(player, screen):
+    x = 32
+    y = screen.get_height() - 78
+    surf = pygame.surface.Surface((64, 64))
+    surf.set_alpha(150)
+    surf.fill((50, 50, 50))
+    for i in range(5):
+        pygame.draw.rect(screen, WHITE, (x - 4, y - 4, 68, 68), 2) ## draws hotbar slots
+        
+        screen.blit(surf, (x-2, y-2)) ## fills hotbar slots with semi-transparent background
+
+        x += 74
+    x = 32
+    for i in range (min(5,len(player.inventory.items))):
+        screen.blit(player.inventory.items[i].image, (x, y))
+        x+=74
+
 
 
 def draw_items_ground(player, screen, ground_items, locations, cam_x, cam_y):
@@ -211,6 +217,22 @@ def draw_items_ground(player, screen, ground_items, locations, cam_x, cam_y):
 
 
 def play(screen, clock, font, settings, controls):
+    pygame.mixer.init()
+    volume = settings["audio"]["volume"]
+    noise = 33
+    if volume == "Low":
+        noise = 0.33
+    elif volume == "Medium":
+        noise = 0.66
+    elif volume == "High":
+        noise = 1.0
+    if settings["audio"]["mute"]:
+        noise = 0    
+
+    pygame.mixer.music.set_volume(noise)
+    pygame.mixer.music.load(ap("audio", "pallet_town.mp3"))
+    pygame.mixer.music.play(-1) ## starts background music on loop
+
     world = World(ap("maps", "bananas_map.tmx")) ## loads the map from assets/maps, using ap function
     mini_boss_defeated = False
     boss_defeated = False
@@ -223,11 +245,13 @@ def play(screen, clock, font, settings, controls):
     else:
         player = make_player(settings)
         items_to_remove = player.from_dict(player_data)
-    pet = Pet(player, "Growlithe")    
+
+        
+    pet = Pet(player, "Mew")    
     player.pet = pet    ## hardcodes what pet the player has, can be expanded to have a choice
 
 
-    enemies = make_enemies() ## spawns 10 enemies at spawn will be adjusted for better pacing once map is made and playtested
+    enemies = make_enemies() 
     
     tracking_range = settings["gameplay"].get("enemy_tracking_range", 400)
     min_range = settings["gameplay"].get("enemy_min_range", 50) ## parts of enemy settings is loaded, 400 and 50 for backups if there is an error
@@ -235,7 +259,7 @@ def play(screen, clock, font, settings, controls):
     cam_x, cam_y = 0, 0
     small_font = pygame.font.Font("assets/fonts/path.ttf", 20) ## smaller font for inventory text and other small text on screen
 
-    item_spawns = [(380, 150), (1750, 80), (2300, 1080), (2400, 1080), (4250, 750)]
+    item_spawns = [(380, 150), (1750, 80), (2300, 1080), (1396, 3215), (4250, 750)]
     ground_items = [items[0], items[4], items[2], items[10], items[1]] ## arrays for defining item spawns and what items thet are
 
     for item in items_to_remove:
@@ -244,9 +268,9 @@ def play(screen, clock, font, settings, controls):
                 player.inventory.add_item(item2)
         
         if item in ground_items:
-            idx = ground_items.index(item)
+            index = ground_items.index(item)
             ground_items.remove(item)
-            item_spawns.pop(idx)
+            item_spawns.pop(index)
     player.hand = player.inventory.items[0] if player.inventory.items else None
     ##removes items from the ground if they are in the inventory and sets the players hand to first item in inventory
 
@@ -261,7 +285,7 @@ def play(screen, clock, font, settings, controls):
 
     signs = [
         Sign(500, 600, 6110, 6120, "Thank you for saving us from the evil monster!! You have officially beat the game and saved the region"),
-        Sign(425, 450, 100, 125, "Press [E] to pick up weapon"), #first spawn
+        Sign(425, 450, 100, 125, ""), #first spawn
         Sign(1725, 1750, 50, 75, "Press [I] for the inventory and press [E] to equip the armour"),#on bridge
         Sign(460, 490, 1810, 1830, "Beware of the mini boss ahead!"),#start of cave sequence
         Sign(1040, 1060, 2400, 2435, "The mini boss drops a powerful item, but is very strong!"), # before mini boss room
@@ -269,7 +293,7 @@ def play(screen, clock, font, settings, controls):
         Sign(2525, 2550, 2790, 2815, "To defeat the final boss, you must first defeat the mini boss"),#in coridoor
         Sign(1150, 1175, 1760, 1780, "The boss is even stronger, but drops the key to finish the game!"), # final cave door
         Sign(100, 125, 2325, 2350, "You need to get the royal seal to open the final door!")]
-## definnitions of all regions in the game --- portals and destinations along with all the signs
+    ## definitions of all regions in the game --- portals and destinations along with all the signs
     while True and not player.is_dead(): ## only runs if player is alive, otherwise goes back to menu
         player.hand = player.inventory.items[0] if player.inventory.items else None ## always updates player hand first
         dt = clock.tick(120) / 1000.0 ## starts the clock tick for smooth fps movement
@@ -296,12 +320,23 @@ def play(screen, clock, font, settings, controls):
 
                     
         keys = pygame.key.get_pressed() ## used for all actions after
+        volume = settings["audio"]["volume"]
+        noise = 0
+        if volume == "Low":
+            noise = 0.33
+        elif volume == "Medium":
+            noise = 0.66
+        elif volume == "High":
+            noise = 1.0
+        if settings["audio"]["mute"]:
+            noise = 0    
 
+        pygame.mixer.music.set_volume(noise)
         player.ranged(keys, controls)
         player.update_projectiles(dt, enemies)
-        player.melee(keys, controls, enemies)  # Check for attack input
+        player.melee(keys, controls, enemies)  ## Check for attack input
 
-        player.update_attack(dt)  # Update attack animation
+        player.update_attack(dt)  ## Update attack animation
         player.move(dt, keys, controls, world.collides, settings)
         player.heal(keys, controls)
         player.equip_armour(keys, controls) ## entire player update handling all methods in player class that are needed
@@ -314,8 +349,6 @@ def play(screen, clock, font, settings, controls):
 
         cam_x = max(0, min(cam_x, max(0, world.width_px - sw)))
         cam_y = max(0, min(cam_y, max(0, world.height_px - sh)))
-
-
 
         world.draw(screen, cam_x, cam_y, player) ## player is drawn in world draw to allow for foreground and background layers
   
@@ -392,5 +425,5 @@ def play(screen, clock, font, settings, controls):
             if boss_num == 67:
                 random_enemy = Enemy("support", random.randint(4178,4592), random.randint(3625, 4005), 500, 20, 10, 200, enemy_sprite)
                 enemies.append(random_enemy) ## gives the boss a 1% chance to spawn a support enemy to make the fight more dynamic and interesting
-
+        draw_hotbar(player, screen)
         pygame.display.flip()

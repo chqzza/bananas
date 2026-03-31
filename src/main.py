@@ -85,29 +85,22 @@ def character_select(screen, font, settings, save_settings_fn):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 return
-
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     return  ## exits character select
-
                 if e.key == pygame.K_TAB:
                     gender_id = (gender_id + 1) % len(genders)  ## swaps gender folder
                     char_dir, characters = load_characters(genders[gender_id])
                     sel = 0  ## resets selection
-
                 if e.key == pygame.K_a:
                     sel = clamp(sel - 1, 0, len(characters) - 1)
-
                 if e.key == pygame.K_d:
                     sel = clamp(sel + 1, 0, len(characters) - 1)
-
                 if e.key == pygame.K_w:
                     sel = clamp(sel - 4, 0, len(characters) - 1)
-
                 if e.key == pygame.K_s:
                     sel = clamp(sel + 4, 0, len(characters) - 1)
                     ## grid navigation in 4 columns
-
                 if e.key == pygame.K_SPACE:
                     settings["player"]["selected_character"] = {
                         "gender": genders[gender_id],
@@ -115,48 +108,33 @@ def character_select(screen, font, settings, save_settings_fn):
                     }
                     save_settings_fn(settings)
                     return  ## saves selection and exits
-
         ## paging logic so only 8 characters are shown at once
         page = sel // 8
         tailPoint = page * 8
         headPoint = min(tailPoint + 8, len(characters))
-
         screen.fill(DARK)
         draw_title(screen,font,f"Character Select — {genders[gender_id]} (TAB to switch)")
-
         name = os.path.splitext(characters[sel])[0]
         screen.blit(font.render(f"Selected: {name}", True, WHITE),(60, 120))
-
         for idx, filename in enumerate(characters[tailPoint:headPoint]):
             col = idx % 4
             row = idx // 4
-
             x = START_X + col * GAP_X
             y = START_Y + row * GAP_Y + 100
-
             img = pygame.image.load(os.path.join(char_dir, filename)).convert_alpha()
             img = pygame.transform.scale(img, (TILE_W, TILE_H))
             screen.blit(img, (x, y))
-
             if tailPoint + idx == sel:
-                pygame.draw.rect(
-                    screen,
-                    GREEN,
-                    (x - 6, y - 6, TILE_W + 12, TILE_H + 12),
-                    4
-                )  ## draws highlight box around selected sprite
-
+                pygame.draw.rect(screen,(255,0,0),(x - 6, y - 6, TILE_W + 12, TILE_H + 12),4)  ## draws highlight box around selected sprite
         pygame.display.flip()
 
 
-def pick_save_file():
+def pick_save_file(screen, font):
     ## allows player to choose between:
     ## N = New Game (clears save file)
     ## L = Load existing save file
 
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720))
-    font = pygame.font.Font(ap("fonts", "path.ttf"), 40)
 
     file = "config/savegame"
 
@@ -168,13 +146,9 @@ def pick_save_file():
                 if e.key == pygame.K_n:
                     with open(file + ".json", "w") as f:
                         json.dump({}, f)  ## wipes save file completely
-                    return file + ".json"
+                    return None
 
-                if e.key == pygame.K_l:
-                    if os.path.exists(file + ".json"):
-                        return file + ".json"
-                    else:
-                        return None  ## prevents loading non-existent file
+
 
         screen.fill(DARK)
         draw_title(screen, font, "Press N for New Game or L to Load Game")
@@ -225,7 +199,7 @@ def main():
             result = character_select(screen, font, settings, save_settings)
 
         elif choice == "pick save file":
-            result = pick_save_file()
+            result = pick_save_file(screen, font)
             if result == "quit":
                 running = False
 

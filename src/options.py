@@ -3,14 +3,12 @@ from ui import draw_title, clamp, DARK, WHITE, GREEN
 
 
 def options_screen(screen, font, settings, save_settings_fn):
-    ## options menu allowing the player to:
-    ## - change difficulty
-    ## - toggle fullscreen
-    ## - go back to main menu
 
-    items = ["Difficulty", "Fullscreen", "Back"]
+
+    items = ["Difficulty", "Fullscreen", "Volume", "Back"]
     sel = 0  ## keeps track of which option is currently selected
     diffs = ["Easy", "Normal", "Hard"]  ## possible difficulty values
+    volumes = ["Mute", "Low", "Medium", "High"]  ## possible volume values
 
     while True:
         for e in pygame.event.get():
@@ -39,6 +37,12 @@ def options_screen(screen, font, settings, save_settings_fn):
                         settings["video"]["fullscreen"] = not settings["video"]["fullscreen"]
                         ## toggles fullscreen boolean value
                         save_settings_fn(settings)
+                    elif items[sel] == "Volume":
+                        settings["audio"]["volume"] = volumes[(volumes.index(settings["audio"]["volume"]) + 1) % len(volumes)]
+
+                        settings["audio"]["mute"] = (settings["audio"]["volume"] == "Mute")
+
+                        save_settings_fn(settings)
 
                     else:
                         return "back"  ## if "Back" selected, exit options screen
@@ -47,8 +51,9 @@ def options_screen(screen, font, settings, save_settings_fn):
         draw_title(screen, font, "Options")
 
         ## displays current settings at top for clarity
-        info = f'Difficulty: {settings["gameplay"]["difficulty"]}   Fullscreen: {settings["video"]["fullscreen"]}'
-        screen.blit(font.render(info, True, WHITE), (40, 90))
+        info = f'Difficulty: {settings["gameplay"]["difficulty"]}   Fullscreen: {settings["video"]["fullscreen"]}  Volume: {"Muted" if settings["audio"]["mute"] else settings["audio"]["volume"]}'
+        small_font = pygame.font.Font("assets/fonts/path.ttf", 30)
+        screen.blit(small_font.render(info, True, WHITE), (40, 90))
 
         ## draws selectable menu items
         for i, name in enumerate(items):

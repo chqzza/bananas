@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+from settings import ap
 global settings
 pygame.init()
 
@@ -61,12 +62,12 @@ class Character:
 
         return self.hp <= 0 ## returns true if hp <=0
     
-    def draw(self, surf, cam_x=0, cam_y=0):
+    def draw(self, screen, cam_x=0, cam_y=0):
         if self.is_dead():
             return  # Don't draw if dead
         img = self.frames[self.direction][self.anim_frame] ## gets correct frame
-        surf.blit(img, (int(self.x - 32 - cam_x), int(self.y - 32 - cam_y))) ## drawn from top left so adjusted for camera and x,y
-        pygame.draw.rect(surf, (255,0,0), self.rect().move(-cam_x, -cam_y), 2)                                                             ## but pygame draws from top left so it is offset by half the size
+        screen.blit(img, (int(self.x - 32 - cam_x), int(self.y - 32 - cam_y))) ## drawn from top left so adjusted for camera and x,y
+        ##pygame.draw.rect(screen, (255,0,0), self.rect().move(-cam_x, -cam_y), 2)                                                             ## but pygame draws from top left so it is offset by half the size
 
 
 
@@ -147,7 +148,7 @@ class Player(Character):
             "gold": self.gold,
             "level": self.level,
 
-            "inventory": [item.name for item in self.inventory.items]  ## takes all the data from the savegame json and turns it into a player
+            "inventory": [item.name for item in self.inventory.items]
         }
     def from_dict(self, data):
         self.name = data.get("name", self.name)
@@ -176,14 +177,15 @@ class Player(Character):
         
 
     def take_damage(self, damage):
-        reduction = self.defence / (self.defence + 100) ## simple formula for damage reduction, gives diminishing returns on defence for better balancing
-        final_damage = damage * (1 - reduction)
+        reduction = 40*damage / (self.defence + 100) ## simple formula for damage reduction, gives diminishing returns on defence for better balancing
+        final_damage = damage * (reduction)
         self.hp = max(0, self.hp - final_damage)
 
     def melee(self, keys, controls, enemies=None):
-
+        
         if keys[controls["attack"]] and not self.attacking and self.hand and self.hand.item_type == "weapon" and self.hand.range == "melee":
-            ## ensures it only enters if holding a melee weapon
+            pygame.mixer.Sound(ap("audio", "X-scissor.mp3")).play() 
+            ## plays sword swing sound when attacking ## ensures it only enters if holding a melee weapon
             self.attacking = True
             self.attack_frame = 0
             self.attack_timer = 0
@@ -248,7 +250,8 @@ class Player(Character):
                 projectile["rect"].width,
                 projectile["rect"].height
             ) ## centers the projectile rect on the projectile and adjusts accordinglt for camera
-            pygame.draw.rect(screen, (255, 0, 0), draw_rect)
+            pygame.draw.rect(screen, (139, 69, 19), draw_rect) ##brown rectangle
+            pygame.draw.rect(screen, (0,0,0), draw_rect, 1) ## simple black border
     def update_attack(self, dt):
 
         if self.attacking:
@@ -263,22 +266,22 @@ class Player(Character):
                     self.attacking = False
                     self.attack_frame = 0 ## returns back to first frame of attacking
     
-    def draw(self, surf, cam_x, cam_y):
+    def draw(self, screen, cam_x, cam_y):
 
         ## Draw player sprite (call parent class draw if it exists)
-        super().draw(surf, cam_x, cam_y)
+        super().draw(screen, cam_x, cam_y)
         
         ## Draw attack animation if attacking
         if self.attacking and self.attack_frame < len(self.attack_frames):
             frame = self.attack_frames[self.attack_frame]
             cx = int(self.x - cam_x)
             cy = int(self.y - cam_y)
-            surf.blit(frame, (cx - frame.get_width()//2, cy - frame.get_height()//2))
+            screen.blit(frame, (cx - frame.get_width()//2, cy - frame.get_height()//2))
 
     def level_up(self, items):
         self.level += 1
         self.xp = 0
-        self.xp_next = int(self.xp_next * 1.12**self.level) ## uses exponential growth for xp to make levelling harder
+        self.xp_next = int(self.xp_next * 1.02**self.level) ## uses exponential growth for xp to make levelling harder
         self.hp_max += 10
         self.attack += 10
         self.defence += 50
@@ -307,13 +310,13 @@ class Enemy(Character):
 
     def take_damage(self, player):
         ##scales damage based off players attack and enemy defence
-        amount = max(5, (2*player.attack + player.hand.power - self.defence)/10) ## basic damage formula, can be improved with different enemy types and weaknesses
+        amount = max(5, (2*player.attack + player.hand.power - self.defence)/10) ## basic damage formula
 
         if player.hand and player.hand.item_type == "weapon" and player.hand.range == "melee":
             amount *= (1 + player.hand.power / 100) ## melee weapons increase damage
 
         elif player.hand and player.hand.item_type == "weapon" and player.hand.range == "ranged":
-            amount *= (1 - player.hand.power / 200)   ## ranged weapons do less damage but have more utility
+            amount *= (1 + player.hand.power / 200)   ## ranged weapons do less damage but have more utility
 
         if amount > 0:
             self.hp = min(self.hp - amount, self.hp_max) ## reduces hp by the damage amount, ensuring it doesn't go below 0
@@ -326,7 +329,7 @@ class Enemy(Character):
             player.take_damage(self.attack_damage)
             self.attack_timer = self.attack_cooldown ## resets attack timer after attacking
 
-    def draw_health_bar(self, surf, cam_x=0, cam_y=0):
+    def draw_health_bar(self, screen, cam_x=0, cam_y=0):
         if not self.is_dead():
             ##Displays small HP bar above the enemy.
             bar_width = 30
@@ -337,9 +340,9 @@ class Enemy(Character):
             ratio = self.hp / self.hp_max if self.hp_max > 0 else 0
             fill_width = int(bar_width * ratio) ## scales the fill width according to the hp ratio
 
-            pygame.draw.rect(surf, (150, 0, 0), (x, y, bar_width, bar_height))      ## background
-            pygame.draw.rect(surf, (0, 255, 0), (x, y, fill_width, bar_height))    ## green fill
-            pygame.draw.rect(surf, (255, 255, 255), (x, y, bar_width, bar_height), 1)  ## outline
+            pygame.draw.rect(screen, (150, 0, 0), (x, y, bar_width, bar_height))      ## background
+            pygame.draw.rect(screen, (0, 255, 0), (x, y, fill_width, bar_height))    ## green fill
+            pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 1)  ## outline
 
     def track(self, player, dt, enemies,collides_fn, tracking_range=400, min_range=50):
         ##Basic enemy tracking ai
@@ -352,7 +355,7 @@ class Enemy(Character):
 
         self.tracking = (min_range < dist < tracking_range)
         if not self.tracking:
-            self.update_anim(dt, False)
+            self.update_anim(dt, False) ## if not tracking, update animation with moving = false to reset to standing frame
             return
 
         nx = dx / dist
@@ -439,18 +442,14 @@ class Boss(Enemy):
             width,
             height
         )
-    def update_anim(self, dt, is_moving):
-        self.anim_time += dt
-        if self.anim_time >= 0.2:
-            self.anim_time = 0
-            self.anim_frame = (self.anim_frame + 1) % 3
 
-    def boss_draw(self, surf, cam_x=0, cam_y=0):
+
+    def boss_draw(self, screen, cam_x=0, cam_y=0):
         if self.is_dead():
             return
 
         img = self.frames[self.anim_frame]
-        surf.blit(
+        screen.blit(
             img,
             (int(self.x - img.get_width()//2 - cam_x),
              int(self.y - img.get_height()//2 - cam_y))
@@ -465,8 +464,8 @@ class Item:
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (64, 64)) ## all items are scaled to 64x64 for consistency and visibility
 
-    def draw(self, surf, x, y, cam_x, cam_y):
-        surf.blit(self.image, (x - cam_x, y - cam_y)) ## simple drawing for items on the ground
+    def draw(self, screen, x, y, cam_x, cam_y):
+        screen.blit(self.image, (x - cam_x, y - cam_y)) ## simple drawing for items on the ground
 
     def pickup(self, player, location, items, locations, keys, controls): ##location is the items location, locations stores all places they spawn
         region = pygame.Rect(location[0], location[1] , 64, 64)
@@ -545,7 +544,7 @@ class Pet:
             ## uses 50 to stop the player and pet sprites from overlapping
         return (x, y)
     
-    def draw(self, surf, cam_x, cam_y):
+    def draw(self, screen, cam_x, cam_y):
         if self.direction == "down":
             frames = self.down_frames
         elif self.direction == "up":
@@ -557,12 +556,12 @@ class Pet:
 
         img = frames[self.anim_frame // 10 % 2]
         img = pygame.transform.scale(img, (64, 64))
-        surf.blit(img, (int(self.x - cam_x - img.get_width()//2), int(self.y - cam_y - img.get_height()//2))) ## same way all other sprites are displayed
+        screen.blit(img, (int(self.x - cam_x - img.get_width()//2), int(self.y - cam_y - img.get_height()//2))) ## same way all other sprites are displayed
 
-    def update_pet(self, player, surf, cam_x, cam_y):
+    def update_pet(self, player, screen, cam_x, cam_y):
         
         self.x, self.y = self.update_position(player)
-        self.draw(surf, cam_x, cam_y)
+        self.draw(screen, cam_x, cam_y)
         self.anim_frame+=1
         ##grouped update method
 
@@ -597,7 +596,7 @@ class Sign(Region):
         padding = 20
 
         box_x = (sw - box_width) // 2
-        box_y = sh - box_height - 40
+        box_y = (sh - box_height)//2
 
         ## Semi-transparent background
         box_surface = pygame.Surface((box_width, box_height))
@@ -638,8 +637,8 @@ class NPC(Sign):
         self.name = name
         self.image = pygame.image.load(image_path).convert_alpha() ## NPC is a sublass of sign as they only differ in that they have a sprite
 
-    def draw(self, surf, cam_x, cam_y):
-        surf.blit(self.image, (self.rect[0] - cam_x, self.rect[2] - cam_y)) ## draws the npc sprite at its location
+    def draw(self, screen, cam_x, cam_y):
+        screen.blit(self.image, (self.rect[0] - cam_x, self.rect[2] - cam_y)) ## draws the npc sprite at its location
 
 
 class Inventory:
@@ -658,4 +657,3 @@ class Inventory:
             self.items.remove(item)
             return True
         return False ## simple method for dropping items, checks if the item is in the inventory first
-    

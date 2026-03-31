@@ -28,8 +28,8 @@ class World:
 
 
 
-    def draw(self, surf, cam_x=0, cam_y=0, player=None):
-        sw, sh = surf.get_size()
+    def draw(self, screen, cam_x=0, cam_y=0, player=None):
+        sw, sh = screen.get_size()
 
         start_x = max(0, cam_x // self.tile_w)
         start_y = max(0, cam_y // self.tile_h)
@@ -46,10 +46,10 @@ class World:
                             if gid:
                                 tile = self.tmx.get_tile_image_by_gid(gid)
                                 if tile:
-                                    surf.blit(tile, (x*self.tile_w - cam_x, y*self.tile_h - cam_y))
+                                    screen.blit(tile, (x*self.tile_w - cam_x, y*self.tile_h - cam_y))
 
-        player.draw(surf, cam_x, cam_y)
-        player.pet.update_pet(player, surf, cam_x, cam_y)      
+        player.draw(screen, cam_x, cam_y)
+        player.pet.update_pet(player, screen, cam_x, cam_y)      
         
         for layer in self.tmx.visible_layers:
             if 'fg' in getattr(layer, "name", "").lower():
@@ -60,7 +60,7 @@ class World:
                             if gid:
                                 tile = self.tmx.get_tile_image_by_gid(gid)
                                 if tile:
-                                    surf.blit(tile, (x*self.tile_w - cam_x, y*self.tile_h - cam_y))
+                                    screen.blit(tile, (x*self.tile_w - cam_x, y*self.tile_h - cam_y))
 
     def collides(self, rect: pygame.Rect):
         
